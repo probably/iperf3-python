@@ -163,6 +163,10 @@ class IPerf3(object):
         self.lib.iperf_get_test_num_streams.argtypes = (c_void_p,)
         self.lib.iperf_set_test_num_streams.restype = None
         self.lib.iperf_set_test_num_streams.argtypes = (c_void_p, c_int,)
+        self.lib.iperf_get_test_omit.restype = c_int
+        self.lib.iperf_get_test_omit.argtypes = (c_void_p,)
+        self.lib.iperf_set_test_omit.restype = None
+        self.lib.iperf_set_test_omit.argtypes = (c_void_p, c_int,)
         self.lib.iperf_has_zerocopy.restype = c_int
         self.lib.iperf_has_zerocopy.argtypes = None
         self.lib.iperf_set_test_zerocopy.restype = None
@@ -413,6 +417,7 @@ class Client(IPerf3):
         self._server_hostname = None
         self._port = None
         self._num_streams = None
+        self._omit = None
         self._zerocopy = False
         self._bandwidth = None
         self._protocol = None
@@ -536,6 +541,17 @@ class Client(IPerf3):
     def num_streams(self, number):
         self.lib.iperf_set_test_num_streams(self._test, number)
         self._num_streams = number
+
+    @property
+    def omit(self):
+        """The number of intervals to omit."""
+        self._omit = self.lib.iperf_get_test_omit(self._test)
+        return self._omit
+
+    @omit.setter
+    def omit(self, number):
+        self.lib.iperf_set_test_omit(self._test, number)
+        self._omit = number
 
     @property
     def zerocopy(self):
@@ -707,7 +723,7 @@ class TestResult(object):
     :param protocol: 'TCP' or 'UDP'
     :param num_streams: Number of test streams
     :param blksize:
-    :param omit:
+    :param omit: Number of intervals to omit
     :param duration: Test duration in seconds
 
     :param local_cpu_total: The local total CPU load
